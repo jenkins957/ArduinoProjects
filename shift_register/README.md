@@ -1,4 +1,4 @@
-#8 Bit Shift Register
+# 8 Bit Shift Register
 
 74595 8 Bit Shift Register with Arduino Nano
 
