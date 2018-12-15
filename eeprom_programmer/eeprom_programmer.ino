@@ -1,10 +1,21 @@
- #define SHIFT_DATA 2
+/**
+ * Arduino EEPROM Programmer
+ * Set up for Atmel AT28C64B EEPROM
+ * Can read and write a byte of data to a given memory location.
+ * Contents is outputted via serial pins.
+ * 
+ * Program used 2 x 74595 Shift registers to minimise number of pins required.
+ */
+#define SHIFT_DATA 2
 #define SHIFT_CLK 3
 #define SHIFT_LATCH 4
 #define EEPROM_D0 5
 #define EEPROM_D7 12
 #define WRITE_EN 13
 
+/*
+ * Set up steps. The EEPROM is written or read in the set up
+ */
 void setup() 
 {
    pinMode(SHIFT_DATA, OUTPUT);
@@ -15,20 +26,23 @@ void setup()
    pinMode(WRITE_EN, OUTPUT);
    
    Serial.begin(57600);
-  
-   delay(100);
+     
+   writeEEprom(0, 0x12);
+   writeEEprom(1, 0x34);
+
+   //resetEEprom();
    
-   writeEEprom(0, 0xaa);
-   writeEEprom(1, 0xaa);
-//   writeEEprom(2, 0xaa);
-//   writeEEprom(10, 0xaa);
-
-   delay(10);
    printContents();
-
    Serial.end();
 }
 
+/*
+ * Set the address lines and OE pin
+ * OE is active low
+ * 
+ * outputEnabled false - Set OE high to go to input mode 
+ * outputEnabled true - Set OE low to go to output mode
+ */
 void setAddress(int address, bool outputEnable)
 {
     // OutputEnable on 2nd 595 pin 7
@@ -57,15 +71,29 @@ byte readEEprom(int address)
     return data;
 }
 
+/**
+ * Reset memoery locations 0 - 255 to 0FF
+ */
+void resetEEprom()
+{
+    for( int address = 0; address <= 255; address += 1 )
+    {
+        writeEEprom(address, 0xff);
+    }  
+}
+
+/*
+ * Write a byte of data to specified address.
+ */
 void writeEEprom(int address, byte data)
 {
+    setAddress(address, false);    
+
     for( int pin = EEPROM_D0; pin <= EEPROM_D7; pin += 1 )
     {
         pinMode(pin, OUTPUT);
     }
-    
-    setAddress(address, false);    
-    
+        
     for( int pin = EEPROM_D0; pin <= EEPROM_D7; pin += 1 )
     {
         digitalWrite(pin, data & 1);
@@ -73,11 +101,14 @@ void writeEEprom(int address, byte data)
     }
 
     digitalWrite(WRITE_EN, LOW);
-    //delayMicroseconds(1);
+    delayMicroseconds(1);
     digitalWrite(WRITE_EN, HIGH);
-    delay(5);
+    delay(15);
 }
 
+/*
+ * Print contents in hex first 256 memory locations.
+ */
 void printContents() 
 {
     for( int base = 0; base <= 255; base += 16 )
@@ -96,7 +127,11 @@ void printContents()
     }
 }
 
+/*
+ * Main execution loop.
+ */
 void loop() 
 {
-  
+    // Reading and wrting to EEPROM occurs in set up steps
+    // as one-off activity 
 }
