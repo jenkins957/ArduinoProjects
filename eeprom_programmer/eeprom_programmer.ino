@@ -29,6 +29,10 @@ void setup()
      
    writeEEprom(0, 0x12);
    writeEEprom(1, 0x34);
+   writeEEprom(2, 0x56);
+   writeEEprom(3, 0x78);
+   writeEEprom(4, 0x9a);
+   writeEEprom(5, 0xbc);
 
    //resetEEprom();
    
