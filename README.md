@@ -1,2 +1,2 @@
-# ArduinoProjects
+# Arduino Projects
 Various Arduino Projects
