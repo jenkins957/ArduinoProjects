@@ -13,6 +13,8 @@
 #define EEPROM_D7 12
 #define WRITE_EN 13
 
+#define MAX_ADDRESS 0x1fff //13 address lines 0 - 8192
+
 /*
  * Set up steps. The EEPROM is written or read in the set up
  */
@@ -26,16 +28,16 @@ void setup()
    pinMode(WRITE_EN, OUTPUT);
    
    Serial.begin(57600);
-     
+
+   /*  
    writeEEprom(0, 0x12);
    writeEEprom(1, 0x34);
    writeEEprom(2, 0x56);
-   writeEEprom(3, 0x78);
-   writeEEprom(4, 0x9a);
-   writeEEprom(5, 0xbc);
-
-   //resetEEprom();
+   */
    
+   //resetEEprom();
+
+   //printContents(0xFF, 0x1FF);
    printContents();
    Serial.end();
 }
@@ -76,11 +78,11 @@ byte readEEprom(int address)
 }
 
 /**
- * Reset memoery locations 0 - 255 to 0FF
+ * Reset memory locations to 0xff
  */
 void resetEEprom()
 {
-    for( int address = 0; address <= 255; address += 1 )
+    for( int address = 0; address <= MAX_ADDRESS; address += 1 )
     {
         writeEEprom(address, 0xff);
     }  
@@ -111,11 +113,11 @@ void writeEEprom(int address, byte data)
 }
 
 /*
- * Print contents in hex first 256 memory locations.
+ * Print contents in hex of all memory locations.
  */
 void printContents() 
 {
-    for( int base = 0; base <= 255; base += 16 )
+    for( int base = 0; base <= MAX_ADDRESS; base += 16 )
     {
        byte data[16];
        for( int offset = 0; offset <= 15; offset += 1)
@@ -124,11 +126,38 @@ void printContents()
        }
 
        char buf[80];
-       sprintf(buf, "%03x: %02x %02x %02x %02x %02x %02x %02x %02x    %02x %02x %02x %02x %02x %02x %02x %02x", 
+       sprintf(buf, "%04x: %02x %02x %02x %02x %02x %02x %02x %02x    %02x %02x %02x %02x %02x %02x %02x %02x", 
        base, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7],
              data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15]);
        Serial.println(buf);
     }
+}
+
+void printContents(int startAddress, int endAddress) 
+{
+    for( int base = startAddress; base <= endAddress; base += 16 )
+    {
+       byte data[16];
+       for( int offset = 0; offset <= 15; offset += 1)
+       {
+          data[offset] = readEEprom(base + offset);   
+       }
+
+       char buf[80];
+       sprintf(buf, "%04x: %02x %02x %02x %02x %02x %02x %02x %02x    %02x %02x %02x %02x %02x %02x %02x %02x", 
+       base, data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7],
+             data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15]);
+       Serial.println(buf);
+    }
+}
+
+void printContentsAtAddress(int address)
+{
+   byte b = readEEprom(address);
+   char buf[80];
+   sprintf(buf, "%04x: %02x", address, b); 
+   
+   Serial.println(buf);
 }
 
 /*
